@@ -126,48 +126,69 @@ You can now manage Jenkins running in Docker as needed.
 *******************************************
 
 - **RUN** 
+
 ``Ifconfig`` 
 
 - Check the Ip address
+
 ``Copy the Ip address of machine``
 
 - Go to root user
+
 ``sudo -i`` 
 
 - Copy and paste "172.28.85.79  jenkins.local" into /etc/hosts
+
 ``echo  "172.28.85.79  jenkins.local" >> /etc/hosts``
 
 - Ping the machine with alias "jenkins.local"
+
 ``ping jenkins.local``
 
 
 - Browser the jenkins.local
+
 ``http:jenkins.local:8080``  
 
 - check the Admin password of jenkins
+
 ``sudo cat /var/lib/jenkins/secrets/initialAdminPassword``
 
 - Add Plugin 
+
 ``Simple theme``
+
 ``Role Base Contol``
 
 
 - Trigger builds remotely (e.g., from scripts)
+
 ``http://localhost:8080/job/demo%20forth/build?token=mysecretstoken``
 
 - Add plugin
+
 ``Build Authorization Token root``  
+
  Now you need to change the url base on plugin
+
 ``http://localhost:8080/buildByToken/build?job=demo%20forth&token=mysecretstoken``
+
 For Curl url for terminal use \ intead of &
+
 ``curl http://localhost:8080/buildByToken/build?job=demo%20forth\token=mysecretstoken``
 `
 - SCM (Source Code Management)
+
   If new code is available in repository every 2 minute then job will not execute
+
   ``https://github.com/Hasansattar/Deploy_Container_App_on_AzureCloud_And_CICD_Github_Actions``
+
 **Scheduled**  ``H/2 * * * *``
 
 - Add Plugin
+
 ``Build Pipeline``
+
 ``Deploy to Container``
+
 ``Copy Artifcat``
