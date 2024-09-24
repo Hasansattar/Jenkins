@@ -1,0 +1,92 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'NodeJS 14' // Adjust the label to match your configured Node.js tool in Jenkins
+    }
+
+    environment {
+        SSH_KEY = credentials('your-ssh-key-id') // Replace 'your-ssh-key-id' with the actual Jenkins SSH credential ID
+        EC2_HOST = 'ec2-user@your-ec2-public-ip' // Replace with your actual EC2 instance user and public IP
+    }
+
+    stages {
+        stage("Install Dependencies") {
+            steps {
+                echo "Installing dependencies..."
+                sh 'npm install'
+            }
+        }
+
+        stage("Test") {
+            steps {
+                echo "Running tests..."
+                sh 'npm test'
+                slackSend channel: 'your-channel', message: 'Job Started'
+            }
+        }
+
+        stage("Build") {
+            steps {
+                echo "Building project..."
+                sh 'npm run build'
+            }
+        }
+
+        stage("Deploy on EC2 Test Server") {
+            steps {
+                echo "========Test EC2 Server Deployment========"
+                
+                // Securely copy files to EC2 instance
+                sh """
+                scp -i ${SSH_KEY} -r ./dist/* ${EC2_HOST}:/var/www/html
+                """
+                 
+                // SSH into the EC2 instance and run deployment commands
+                sh """
+                ssh -i ${SSH_KEY} ${EC2_HOST} << EOF
+                cd /var/www/html
+                npm install --production
+                pm2 restart app || pm2 start app.js --name "node-app"
+                EOF
+                """
+            }
+        }
+
+        stage("Deploy on Prod Server") {
+            input {
+                message "Deploy to production?"
+                ok "Yes, proceed"
+            }
+
+            steps {
+                echo "Deploying to production..."
+                // Similar deployment steps can be added for the production server here
+                sh """
+                scp -i ${SSH_KEY} -r ./dist/* ${EC2_HOST_PROD}:/var/www/html
+                """
+                sh """
+                ssh -i ${SSH_KEY} ${EC2_HOST_PROD} << EOF
+                cd /var/www/html
+                npm install --production
+                pm2 restart app || pm2 start app.js --name "node-app"
+                EOF
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "========Pipeline completed========"
+        }
+        success {
+            echo "========Pipeline executed successfully========"
+            slackSend channel: 'your-channel', message: 'Success'
+        }
+        failure {
+            echo "========Pipeline execution failed========"
+            slackSend channel: 'your-channel', message: 'Job Failed'
+        }
+    }
+}
