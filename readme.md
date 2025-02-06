@@ -9,7 +9,7 @@ Docker: Ensure you have Docker installed on your system. If not, download and in
 - Run the following command to pull the Jenkins image from Docker Hub
 
 ```bash
-docker pull jenkins/jenkins
+docker pull jenkins/jenkins:lts
 ```
 
 ## Step 2: Create a Docker Volume for Jenkins Data
@@ -29,10 +29,7 @@ Now, start a Jenkins container and map the necessary ports and volumes.
 Run the following command to start the container:
 
 ```bash
-docker run -d --name jenkins \
-  -p 8080:8080 -p 50000:50000 \
-  -v jenkins_home:/var/jenkins_home \
-  jenkins/jenkins
+docker run -d --name jenkins -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --user root jenkins/jenkins:lts
 ```
 
 Here’s what the command does:
